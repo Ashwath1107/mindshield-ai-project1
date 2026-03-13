@@ -12,6 +12,7 @@ type AnalyzeResult = {
   mental_state: string;
   wellness_suggestions: string[];
   stability_score: number;
+  emotion_confidence?: number;
 };
 
 type Message = {
@@ -29,38 +30,88 @@ const MENTAL_HEALTH_RESOURCES = [
   { name: "BetterHelp", value: "betterhelp.com", icon: "💙" },
 ];
 
-// Empathetic AI responses based on emotion
-function buildAIResponse(data: AnalyzeResult, userMsg: string): string {
-  const { emotion, burnout_risk, mental_state, wellness_suggestions, hidden_emotion } = data;
+// Empathetic AI responses based on emotion + full context
+function buildAIResponse(data: AnalyzeResult): string {
+  const { emotion, burnout_risk, mental_state, wellness_suggestions, hidden_emotion, emotion_confidence, stability_score } = data;
 
-  const empathy: Record<string, string> = {
-    sadness: "I can hear that you're going through a difficult time. Your feelings are completely valid, and I'm here with you. 💙",
-    anger: "It sounds like something has really frustrated or upset you. Those feelings make sense, and it's okay to feel angry.",
-    fear: "It's understandable to feel anxious or scared — especially when things feel uncertain. You're not alone in this.",
-    joy: "I love hearing that! Positive moments are worth celebrating. Keep holding onto what brings you joy. ✨",
-    love: "What a beautiful feeling to experience. Nurturing those connections is so important for our wellbeing.",
-    surprise: "Life does throw unexpected things our way! It sounds like something caught you off guard.",
-    neutral: "Thank you for sharing how you're feeling. I'm here to listen and support you.",
+  // Opening — tone varies by emotion
+  const openings: Record<string, string[]> = {
+    sadness: [
+      "I can hear the heaviness in your words, and I want you to know — what you're feeling is real and valid. 💙",
+      "Thank you for trusting me with this. Sadness is one of the hardest feelings to sit with, and I'm right here with you.",
+      "I hear you. You don't need to have answers right now — you just need to feel heard, and you are.",
+    ],
+    anger: [
+      "Something is clearly bothering you deeply, and your frustration makes complete sense. I'm listening.",
+      "Your anger is valid — it's often a signal that something important to you has been violated. Let's talk about it.",
+      "It sounds like you've been holding a lot in. I'm here, and you can let it out.",
+    ],
+    fear: [
+      "Anxiety and fear are exhausting to carry. You don't have to figure everything out right now — I'm here with you.",
+      "I hear the worry in your words. Let's slow down together and take this one breath at a time.",
+      "What you're feeling sounds overwhelming. That's completely understandable — and you don't have to face it alone.",
+    ],
+    joy: [
+      "It's really wonderful to hear some positivity from you! ✨ Let's hold onto that feeling.",
+      "I love hearing this! Your positive energy is genuinely contagious.",
+    ],
+    love: [
+      "Connection and love are among the most powerful sources of wellbeing. It's beautiful that you have that.",
+      "What a meaningful thing to share. Nurturing love — for others and yourself — is deeply healing.",
+    ],
+    surprise: [
+      "Life certainly has a way of catching us off guard. How are you sitting with this unexpected development?",
+      "Surprises can be disorienting — even good ones. I'm curious how this is landing for you.",
+    ],
+    neutral: [
+      "Thank you for checking in. Even feeling 'okay' is worth exploring — sometimes 'fine' has layers beneath it.",
+      "I appreciate you taking a moment to reflect. How are things really going beneath the surface?",
+      "Steady is good. Let's make sure you're truly okay and not just pushing through.",
+    ],
   };
 
-  const openingLine = empathy[emotion] || "Thank you for opening up. I'm listening.";
+  const openingPool = openings[emotion] ?? openings.neutral;
+  const opening = openingPool[Math.floor(Math.random() * openingPool.length)];
 
-  let response = `${openingLine}\n\n`;
+  let response = opening + "\n\n";
 
+  // Hidden emotion — empathetic reflection, not clinical
   if (hidden_emotion) {
-    response += `I also noticed some underlying tension in your words — there may be ${hidden_emotion} beneath the surface. It's okay to acknowledge that.\n\n`;
+    const crisisSignal = hidden_emotion.includes("⚠️");
+    if (crisisSignal) {
+      response += `💜 I need to pause here — something in the way you're writing tells me you may be in a really dark place right now. Please know that your life has enormous value, and help is available right now.\n\n`;
+    } else {
+      response += `I also picked up something beneath your words — it seems like there might be some **${hidden_emotion}** underneath. It's completely okay to sit with that. You don't have to pretend everything is fine here.\n\n`;
+    }
   }
 
+  // Mental state from typing
+  if (mental_state === 'stressed') {
+    response += `Your typing pattern also shows some tension — it's okay to slow down. This is a safe space.\n\n`;
+  } else if (mental_state === 'fatigued') {
+    response += `The way you're typing suggests you might be running on low energy right now. Please be gentle with yourself.\n\n`;
+  } else if (mental_state === 'anxious') {
+    response += `I noticed some hesitation in your typing — that sometimes reflects an anxious mind. That's completely okay.\n\n`;
+  }
+
+  // Burnout note
   if (burnout_risk === 'CRITICAL') {
-    response += `⚠️ I'm concerned about your stress levels right now. Please consider talking to someone you trust or reaching out to a professional. You don't have to carry this alone.\n\n`;
+    response += `⚠️ Your emotional stress indicators are at a critical level right now. Please don't try to push through this alone — reaching out to someone is a sign of strength, not weakness.\n\n`;
   } else if (burnout_risk === 'HIGH') {
-    response += `I notice your burnout risk is elevated. That tells me you've been pushing yourself hard. Let's focus on small steps to help you recover.\n\n`;
+    response += `Your stress indicators are elevated. I want to gently encourage you to rest and not push through this alone — small steps matter.\n\n`;
   }
 
+  // Wellness guidance — render as natural conversation, not a bullet list
   if (wellness_suggestions.length > 0) {
-    response += `Here's what I recommend right now:\n`;
+    if (burnout_risk === 'CRITICAL' || hidden_emotion?.includes("⚠️")) {
+      response += `Here's what I want you to do right now:\n`;
+    } else if (emotion === 'joy' || emotion === 'love') {
+      response += `A couple of things to keep this positive energy going:\n`;
+    } else {
+      response += `Here's what I think would help you most right now:\n`;
+    }
     wellness_suggestions.slice(0, 3).forEach((s, i) => {
-      response += `${i + 1}. ${s}\n`;
+      response += `\n${i + 1}. ${s}`;
     });
   }
 
@@ -145,7 +196,7 @@ export function Chat() {
       if (!res.ok) throw new Error('API error');
       const data: AnalyzeResult = await res.json();
 
-      const responseContent = buildAIResponse(data, metrics.message);
+      const responseContent = buildAIResponse(data);
 
       // Show high-risk resources automatically
       if (data.burnout_risk === 'HIGH' || data.burnout_risk === 'CRITICAL') {

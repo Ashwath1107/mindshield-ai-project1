@@ -22,26 +22,29 @@ const router: IRouter = Router();
 
 /**
  * POST /analyze
- * Analyze message text, typing behavior, and predict burnout risk
+ * Full text + typing behavior emotion analysis
  */
 router.post("/analyze", async (req, res) => {
   try {
     const body = AnalyzeEmotionBody.parse(req.body);
 
-    // Detect emotion from text
-    const { emotion } = detectEmotion(body.message);
+    // 1. Detect emotion from text (weighted phrase scoring)
+    const { emotion, confidence, scores } = detectEmotion(body.message);
 
-    // Detect hidden emotional stress patterns
+    // 2. Detect hidden / masked distress signals
     const hiddenEmotion = detectHiddenEmotion(body.message);
 
-    // Analyze typing behavior
+    // 3. Analyze typing behavior → mental state
     const mentalState = analyzeTypingBehavior(
       body.typing_speed ?? undefined,
       body.pause_time ?? undefined,
       body.backspace_count ?? undefined
     );
 
-    // Get recent burnout history for score calculation
+    // 4. Predict burnout risk (now uses emotion + mentalState + hiddenEmotion)
+    const burnoutRisk = predictBurnoutRisk(emotion, mentalState, hiddenEmotion, scores);
+
+    // 5. Get recent session history for stability score
     const recentRecords = await db
       .select({ burnout_risk: emotionRecordsTable.burnout_risk })
       .from(emotionRecordsTable)
@@ -50,16 +53,13 @@ router.post("/analyze", async (req, res) => {
 
     const recentRisks = recentRecords.map(r => r.burnout_risk as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL");
 
-    // Predict burnout risk
-    const burnoutRisk = predictBurnoutRisk(emotion, []);
-
-    // Calculate stability score based on history
+    // 6. Calculate stability score (weighted, most-recent counts most)
     const stabilityScore = calculateStabilityScore([...recentRisks, burnoutRisk]);
 
-    // Generate wellness suggestions
-    const wellnessSuggestions = generateWellnessSuggestions(emotion, mentalState, burnoutRisk);
+    // 7. Generate wellness suggestions (context-aware, conversational)
+    const wellnessSuggestions = generateWellnessSuggestions(emotion, mentalState, burnoutRisk, hiddenEmotion);
 
-    // Store record in database
+    // 8. Persist to DB
     const [record] = await db
       .insert(emotionRecordsTable)
       .values({
@@ -83,6 +83,7 @@ router.post("/analyze", async (req, res) => {
       mental_state: mentalState,
       wellness_suggestions: wellnessSuggestions,
       stability_score: stabilityScore,
+      emotion_confidence: Math.round(confidence * 100),
       id: String(record.id),
       timestamp: record.timestamp.toISOString(),
     });
@@ -94,38 +95,33 @@ router.post("/analyze", async (req, res) => {
 
 /**
  * POST /voice-analysis
- * Analyze voice emotion from audio data
  */
 router.post("/voice-analysis", async (req, res) => {
   try {
     const body = AnalyzeVoiceBody.parse(req.body);
 
-    // Analyze voice tone
-    const { emotion: voiceEmotion, confidence } = analyzeVoiceTone(body.duration ?? undefined);
+    const { emotion: voiceEmotion, confidence, analysis_note } = analyzeVoiceTone(body.duration ?? undefined);
 
-    // Determine burnout risk from voice emotion
     const voiceToBurnout: Record<string, "LOW" | "MEDIUM" | "HIGH"> = {
-      angry: "HIGH",
-      sad: "HIGH",
-      calm: "LOW",
-      happy: "LOW",
-      neutral: "MEDIUM",
+      angry: "HIGH", anxious: "HIGH",
+      sad: "HIGH", fatigued: "MEDIUM",
+      neutral: "MEDIUM", calm: "LOW", happy: "LOW",
     };
     const burnoutRisk = voiceToBurnout[voiceEmotion] ?? "MEDIUM";
 
-    // Optionally store the voice analysis result
     await db.insert(emotionRecordsTable).values({
       message: "[Voice Analysis]",
-      emotion: voiceEmotion === "happy" ? "joy" : voiceEmotion === "calm" ? "neutral" : voiceEmotion as any,
+      emotion: (voiceEmotion === "happy" ? "joy" : voiceEmotion === "calm" || voiceEmotion === "fatigued" ? "neutral" : voiceEmotion) as any,
       burnout_risk: burnoutRisk,
       voice_emotion: voiceEmotion,
-      stability_score: 75,
+      stability_score: burnoutRisk === "LOW" ? 80 : burnoutRisk === "MEDIUM" ? 60 : 40,
     });
 
     res.json({
       voice_emotion: voiceEmotion,
       confidence: Math.round(confidence * 100) / 100,
       burnout_risk: burnoutRisk,
+      analysis_note,
     });
   } catch (error) {
     console.error("Voice analysis error:", error);
@@ -135,28 +131,36 @@ router.post("/voice-analysis", async (req, res) => {
 
 /**
  * POST /face-analysis
- * Analyze facial emotion from image frame
  */
 router.post("/face-analysis", async (req, res) => {
   try {
     const body = AnalyzeFaceBody.parse(req.body);
 
-    // Analyze facial emotion
-    const { emotion: faceEmotion, confidence } = analyzeFacialEmotion();
+    const { emotion: faceEmotion, confidence, analysis_note } = analyzeFacialEmotion();
 
-    // Store result
+    const faceToBurnout: Record<string, "LOW" | "MEDIUM" | "HIGH"> = {
+      angry: "HIGH", fear: "HIGH", sad: "HIGH",
+      tired: "MEDIUM", disgust: "MEDIUM",
+      neutral: "LOW", happy: "LOW", calm: "LOW", surprise: "LOW",
+    };
+    const burnoutRisk = faceToBurnout[faceEmotion] ?? "LOW";
+
     await db.insert(emotionRecordsTable).values({
       message: "[Face Analysis]",
-      emotion: faceEmotion === "happy" ? "joy" : faceEmotion === "disgust" || faceEmotion === "angry" ? "anger" : "neutral",
-      burnout_risk: ["angry", "fear", "sad"].includes(faceEmotion) ? "HIGH" : "LOW",
+      emotion: faceEmotion === "happy" || faceEmotion === "calm" ? "joy"
+        : faceEmotion === "disgust" || faceEmotion === "angry" ? "anger"
+        : faceEmotion === "tired" ? "sadness"
+        : "neutral",
+      burnout_risk: burnoutRisk,
       face_emotion: faceEmotion,
-      stability_score: 75,
+      stability_score: burnoutRisk === "LOW" ? 80 : burnoutRisk === "MEDIUM" ? 60 : 40,
     });
 
     res.json({
       face_emotion: faceEmotion,
       confidence: Math.round(confidence * 100) / 100,
       dominant_emotion: faceEmotion,
+      analysis_note,
     });
   } catch (error) {
     console.error("Face analysis error:", error);
@@ -166,29 +170,23 @@ router.post("/face-analysis", async (req, res) => {
 
 /**
  * GET /dashboard
- * Get emotional history and analytics
  */
 router.get("/dashboard", async (req, res) => {
   try {
-    // Fetch recent records
     const records = await db
       .select()
       .from(emotionRecordsTable)
       .orderBy(desc(emotionRecordsTable.timestamp))
       .limit(50);
 
-    // Calculate emotion counts
     const emotionCounts: Record<string, number> = {};
     for (const record of records) {
       const e = record.emotion;
       emotionCounts[e] = (emotionCounts[e] ?? 0) + 1;
     }
 
-    // Calculate overall stability score
     const risks = records.map(r => r.burnout_risk as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL");
     const stabilityScore = calculateStabilityScore(risks);
-
-    // Get current burnout risk (most recent)
     const currentBurnoutRisk = records[0]?.burnout_risk ?? "LOW";
 
     res.json({
