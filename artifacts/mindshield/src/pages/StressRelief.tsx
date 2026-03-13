@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Layout } from '@/components/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Wind, Target, Palette, Timer, Play, Pause, RotateCcw } from 'lucide-react';
