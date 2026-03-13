@@ -1,0 +1,443 @@
+You are a senior AI engineer and full-stack developer.
+
+Build a complete working full-stack AI web application called:
+
+MindShield AI – Predictive Emotional Guardian
+
+The goal of the system is to detect a user’s mental and emotional state using multiple signals such as:
+
+1. Chat messages
+2. Typing speed and typing pattern
+3. Voice tone
+4. Facial expressions through camera
+
+The system should analyze emotional patterns and predict burnout risk while giving wellness solutions.
+
+The project must be designed as a hackathon-ready prototype but fully functional.
+
+------------------------------------------------
+
+CORE FEATURES
+
+1. AI Chatbot Interface
+
+Users type messages to an AI chatbot.
+
+The system analyzes:
+- Emotion
+- Hidden emotional stress
+- Burnout risk
+- Typing behavior
+
+Emotion classes:
+
+joy
+sadness
+anger
+fear
+love
+surprise
+neutral
+
+Use this HuggingFace model:
+
+j-hartmann/emotion-english-distilroberta-base
+
+------------------------------------------------
+
+2. Typing Behavior Mental Analysis
+
+Track typing speed and typing patterns from the frontend.
+
+Collect these signals:
+
+• typing speed (characters per second)
+• pause duration between words
+• excessive backspaces
+• typing hesitation
+• rapid bursts of typing
+
+Use these patterns to estimate mental state.
+
+Example logic:
+
+Slow typing + long pauses → possible sadness or mental fatigue
+
+Fast chaotic typing → stress or anxiety
+
+Frequent corrections → frustration
+
+Typing speed drop over time → burnout signal
+
+Return results like:
+
+mental_state:
+calm
+focused
+stressed
+fatigued
+anxious
+
+------------------------------------------------
+
+3. Silent Emotion Detection
+
+Detect hidden emotional stress using text patterns.
+
+Examples:
+
+"I'm fine but tired"
+"I guess I'm okay"
+"just exhausted"
+"can't sleep lately"
+
+Return:
+
+hidden_emotion: possible stress
+
+------------------------------------------------
+
+4. Burnout Risk Prediction
+
+Create rule-based burnout prediction.
+
+Rules:
+
+sadness / fear / anger → HIGH risk
+neutral → MEDIUM risk
+joy / love → LOW risk
+
+If HIGH risk occurs multiple times within a short time window → CRITICAL burnout.
+
+------------------------------------------------
+
+5. Voice Emotion Detection
+
+Allow the user to speak using the microphone.
+
+Analyze voice tone using this model:
+
+speechbrain/emotion-recognition-wav2vec2
+
+Detect:
+
+angry
+sad
+calm
+happy
+
+------------------------------------------------
+
+6. Facial Emotion Detection
+
+Use webcam input to detect facial emotions.
+
+Use:
+
+DeepFace
+OpenCV
+
+Detect emotions:
+
+happy
+sad
+angry
+fear
+neutral
+
+------------------------------------------------
+
+7. Emotional Dashboard
+
+Create a dashboard showing emotional analytics.
+
+Dashboard must display:
+
+• Emotional Stability Score
+• Burnout Risk Level
+• Emotion Timeline Graph
+• Typing Stress Indicator
+• Facial Emotion Indicator
+• Voice Emotion Indicator
+• AI wellness suggestions
+
+Use Chart.js to visualize emotional trends.
+
+------------------------------------------------
+
+8. Emotional Stability Score
+
+Calculate a score from 0–100.
+
+Example formula:
+
+score = 100 - (high_risk_events * 10)
+
+Score levels:
+
+80–100 → Stable
+60–79 → Moderate stress
+0–59 → High stress
+
+------------------------------------------------
+
+9. Stress Relief Zone
+
+Create a page with small stress relief tools.
+
+Include:
+
+1. Breathing exercise animation
+2. Reaction speed mini game
+3. Color relaxation game
+4. 1-minute meditation timer
+
+------------------------------------------------
+
+10. AI Wellness Recommendation Engine
+
+Based on the detected emotional state and burnout risk, provide suggestions.
+
+Example suggestions:
+
+If stressed:
+- Take a short break
+- Try breathing exercise
+- Listen to calm music
+
+If fatigued:
+- Hydrate
+- Step away from screen
+- Stretch for 2 minutes
+
+If anxious:
+- Guided breathing
+- Short meditation
+
+------------------------------------------------
+
+TECH STACK
+
+Frontend:
+Next.js
+TailwindCSS
+Chart.js
+WebRTC for camera and microphone
+
+Backend:
+Python
+FastAPI
+Transformers
+DeepFace
+SpeechBrain
+
+Database:
+MongoDB Atlas
+
+------------------------------------------------
+
+BACKEND API REQUIREMENTS
+
+Create these endpoints.
+
+GET /
+
+Health check endpoint.
+
+Response:
+
+{
+ "status": "MindShield AI running"
+}
+
+------------------------------------------------
+
+POST /analyze
+
+Input:
+
+{
+ "message": "I feel very tired today",
+ "typing_speed": 2.1,
+ "pause_time": 3.4
+}
+
+Return:
+
+{
+ emotion: "sadness",
+ hidden_emotion: "possible stress",
+ burnout_risk: "HIGH",
+ mental_state: "fatigued"
+}
+
+Store results in MongoDB.
+
+------------------------------------------------
+
+POST /voice-analysis
+
+Accept recorded audio file and return detected voice emotion.
+
+------------------------------------------------
+
+POST /face-analysis
+
+Accept image frame and return facial emotion.
+
+------------------------------------------------
+
+GET /dashboard
+
+Return stored emotional history including:
+
+messages
+emotion
+burnout_risk
+voice_emotion
+face_emotion
+typing_pattern
+timestamp
+
+------------------------------------------------
+
+FRONTEND PAGES
+
+Create these pages.
+
+/
+
+Landing page explaining MindShield AI.
+
+------------------------------------------------
+
+/chat
+
+Chat interface where users type messages.
+
+Track typing behavior using JavaScript.
+
+Calculate:
+
+typing speed
+pause duration
+backspace count
+
+Send these values to the backend.
+
+------------------------------------------------
+
+/dashboard
+
+Display emotional analytics:
+
+Emotion timeline graph
+Burnout risk indicator
+Mental state indicator
+Stability score
+
+------------------------------------------------
+
+/camera
+
+Camera emotion detection page.
+
+Capture frames and send to backend.
+
+------------------------------------------------
+
+/voice
+
+Voice emotion detection page.
+
+Record microphone input.
+
+------------------------------------------------
+
+/stress-relief
+
+Stress relief tools and mini games.
+
+------------------------------------------------
+
+PROJECT STRUCTURE
+
+mindshield-ai/
+
+backend/
+main.py
+emotion_model.py
+typing_analysis.py
+burnout_predictor.py
+voice_emotion.py
+face_emotion.py
+database.py
+wellness_engine.py
+requirements.txt
+
+frontend/
+pages/
+chat.js
+dashboard.js
+camera.js
+voice.js
+stress-relief.js
+
+components/
+ChatBox.js
+EmotionGraph.js
+TypingTracker.js
+CameraDetector.js
+VoiceRecorder.js
+
+models/
+dataset/
+
+------------------------------------------------
+
+CODE REQUIREMENTS
+
+Write clean code with comments explaining every major step.
+
+The project must run locally and be easy to deploy.
+
+------------------------------------------------
+
+INSTALLATION
+
+Provide commands for installing dependencies.
+
+Example:
+
+pip install fastapi uvicorn transformers torch pymongo deepface speechbrain opencv-python
+
+Frontend:
+
+npm install chart.js react-chartjs-2 axios
+
+------------------------------------------------
+
+RUNNING THE PROJECT
+
+Provide instructions to run:
+
+Backend server
+Frontend server
+MongoDB connection
+
+------------------------------------------------
+
+IMPORTANT
+
+The final result should be a working hackathon prototype that demonstrates:
+
+AI emotion detection
+typing pattern mental analysis
+voice emotion detection
+facial emotion detection
+burnout prediction
+emotional analytics dashboard
+stress relief tools
+AI wellness recommendations
+
+Ensure the UI looks modern and clean using TailwindCSS.

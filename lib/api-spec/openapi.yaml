@@ -1,15 +1,18 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: MindShield AI API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: emotion
+    description: Emotion analysis operations
+  - name: dashboard
+    description: Dashboard and history operations
 paths:
   /healthz:
     get:
@@ -24,6 +27,77 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /analyze:
+    post:
+      operationId: analyzeEmotion
+      tags: [emotion]
+      summary: Analyze message emotion and typing behavior
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzeRequest"
+      responses:
+        "200":
+          description: Analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzeResponse"
+
+  /voice-analysis:
+    post:
+      operationId: analyzeVoice
+      tags: [emotion]
+      summary: Analyze voice emotion from audio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoiceAnalysisRequest"
+      responses:
+        "200":
+          description: Voice emotion result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VoiceAnalysisResponse"
+
+  /face-analysis:
+    post:
+      operationId: analyzeFace
+      tags: [emotion]
+      summary: Analyze facial emotion from image
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FaceAnalysisRequest"
+      responses:
+        "200":
+          description: Facial emotion result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FaceAnalysisResponse"
+
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get emotional history and analytics
+      responses:
+        "200":
+          description: Dashboard data with history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +108,153 @@ components:
       required:
         - status
 
+    AnalyzeRequest:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The user's message text
+        typing_speed:
+          type: number
+          description: Characters per second
+        pause_time:
+          type: number
+          description: Average pause duration in seconds
+        backspace_count:
+          type: integer
+          description: Number of backspaces pressed
+      required:
+        - message
+
+    AnalyzeResponse:
+      type: object
+      properties:
+        emotion:
+          type: string
+          enum: [joy, sadness, anger, fear, love, surprise, neutral]
+        hidden_emotion:
+          type: string
+        burnout_risk:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        mental_state:
+          type: string
+          enum: [calm, focused, stressed, fatigued, anxious]
+        wellness_suggestions:
+          type: array
+          items:
+            type: string
+        stability_score:
+          type: number
+        id:
+          type: string
+        timestamp:
+          type: string
+      required:
+        - emotion
+        - burnout_risk
+        - mental_state
+        - wellness_suggestions
+        - stability_score
+
+    VoiceAnalysisRequest:
+      type: object
+      properties:
+        audio_data:
+          type: string
+          description: Base64 encoded audio data
+        duration:
+          type: number
+          description: Duration of audio in seconds
+      required:
+        - audio_data
+
+    VoiceAnalysisResponse:
+      type: object
+      properties:
+        voice_emotion:
+          type: string
+          enum: [angry, sad, calm, happy, neutral]
+        confidence:
+          type: number
+        burnout_risk:
+          type: string
+      required:
+        - voice_emotion
+        - confidence
+
+    FaceAnalysisRequest:
+      type: object
+      properties:
+        image_data:
+          type: string
+          description: Base64 encoded image frame
+      required:
+        - image_data
+
+    FaceAnalysisResponse:
+      type: object
+      properties:
+        face_emotion:
+          type: string
+          enum: [happy, sad, angry, fear, neutral, surprise, disgust]
+        confidence:
+          type: number
+        dominant_emotion:
+          type: string
+      required:
+        - face_emotion
+        - confidence
+
+    EmotionRecord:
+      type: object
+      properties:
+        id:
+          type: string
+        message:
+          type: string
+        emotion:
+          type: string
+        burnout_risk:
+          type: string
+        mental_state:
+          type: string
+        voice_emotion:
+          type: string
+        face_emotion:
+          type: string
+        typing_speed:
+          type: number
+        stability_score:
+          type: number
+        timestamp:
+          type: string
+      required:
+        - id
+        - emotion
+        - burnout_risk
+        - timestamp
+
+    DashboardResponse:
+      type: object
+      properties:
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmotionRecord"
+        stability_score:
+          type: number
+        current_burnout_risk:
+          type: string
+        emotion_counts:
+          type: object
+          additionalProperties:
+            type: number
+        total_sessions:
+          type: integer
+      required:
+        - records
+        - stability_score
+        - current_burnout_risk
+        - emotion_counts
+        - total_sessions
