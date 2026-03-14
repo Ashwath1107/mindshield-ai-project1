@@ -1,14 +1,7 @@
 import app from "./app";
 
-const rawPort = process.env["PORT"];
-
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
-}
-
-const port = Number(rawPort || "5000");
+const rawPort = process.env["PORT"] || "5000";
+const port = Number(rawPort);
 
 if (process.env.NODE_ENV !== "production") {
   app.listen(port, () => {
