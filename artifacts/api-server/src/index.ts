@@ -8,12 +8,12 @@ if (!rawPort) {
   );
 }
 
-const port = Number(rawPort);
+const port = Number(rawPort || "5000");
 
-if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${rawPort}"`);
+if (process.env.NODE_ENV !== "production") {
+  app.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+  });
 }
 
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+export default app;
