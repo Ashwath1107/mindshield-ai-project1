@@ -1,0 +1,19 @@
+{
+  "install": "pnpm install",
+  "start": "pnpm start",
+  "watch": {
+    "install": {
+      "include": [
+        "package.json",
+        "pnpm-lock.yaml"
+      ]
+    },
+    "restart": {
+      "include": [
+        "artifacts/api-server/src/**/*",
+        ".env"
+      ]
+    },
+    "throttle": 1000
+  }
+}
