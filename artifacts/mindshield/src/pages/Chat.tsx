@@ -194,9 +194,9 @@ export function Chat() {
       });
 
       if (!res.ok) throw new Error('API error');
-      const data: AnalyzeResult = await res.json();
+      const data: AnalyzeResult & { ai_response?: string } = await res.json();
 
-      const responseContent = buildAIResponse(data);
+      const responseContent = data.ai_response || buildAIResponse(data);
 
       // Show high-risk resources automatically
       if (data.burnout_risk === 'HIGH' || data.burnout_risk === 'CRITICAL') {

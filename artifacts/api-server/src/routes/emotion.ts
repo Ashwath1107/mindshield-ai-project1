@@ -45,7 +45,8 @@ router.post("/analyze", async (req, res) => {
     const burnoutRisk = predictBurnoutRisk(emotion, mentalState, hiddenEmotion, scores);
 
     // 5. Get recent session history for stability score
-    const recentRecords = await db
+    let recentRecords: any[] = [];
+    recentRecords = await db
       .select({ burnout_risk: emotionRecordsTable.burnout_risk })
       .from(emotionRecordsTable)
       .orderBy(desc(emotionRecordsTable.timestamp))
@@ -60,7 +61,8 @@ router.post("/analyze", async (req, res) => {
     const wellnessSuggestions = generateWellnessSuggestions(emotion, mentalState, burnoutRisk, hiddenEmotion);
 
     // 8. Persist to DB
-    const [record] = await db
+    let recordItem: any = { id: 1, timestamp: new Date() };
+    const inserted = await db
       .insert(emotionRecordsTable)
       .values({
         message: body.message,
@@ -75,6 +77,42 @@ router.post("/analyze", async (req, res) => {
         wellness_suggestions: JSON.stringify(wellnessSuggestions),
       })
       .returning();
+    recordItem = inserted[0];
+
+    let ai_response: string | undefined;
+
+    if (process.env.OPENROUTER_API_KEY) {
+      try {
+        const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "http://localhost:3000",
+            "X-Title": "MindShield AI"
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              { 
+                role: "system", 
+                content: `You are MindShield AI, an empathetic emotional support companion. The user's detected emotional state is: ${emotion}. Mentally they seem: ${mentalState}. Burnout risk level: ${burnoutRisk}. Provide a highly empathetic, helpful, and supportive response to their message expressing understanding of their feelings. Provide advice. Use markdown formatting lightly if helpful. Keep it concise, around 2-3 short paragraphs max.` 
+              },
+              { role: "user", content: body.message }
+            ]
+          })
+        });
+
+        if (orRes.ok) {
+          const orData = await orRes.json() as any;
+          if (orData.choices?.[0]?.message?.content) {
+             ai_response = orData.choices[0].message.content;
+          }
+        }
+      } catch (err) {
+        console.error("OpenRouter fetch failed:", err);
+      }
+    }
 
     res.json({
       emotion,
@@ -84,8 +122,9 @@ router.post("/analyze", async (req, res) => {
       wellness_suggestions: wellnessSuggestions,
       stability_score: stabilityScore,
       emotion_confidence: Math.round(confidence * 100),
-      id: String(record.id),
-      timestamp: record.timestamp.toISOString(),
+      ai_response,
+      id: String(recordItem.id),
+      timestamp: recordItem.timestamp.toISOString(),
     });
   } catch (error) {
     console.error("Analyze error:", error);
@@ -202,7 +241,7 @@ router.get("/dashboard", async (req, res) => {
         stability_score: r.stability_score,
         timestamp: r.timestamp.toISOString(),
       })),
-      stability_score: stabilityScore,
+      stability_score: isNaN(stabilityScore) ? 80 : stabilityScore,
       current_burnout_risk: currentBurnoutRisk,
       emotion_counts: emotionCounts,
       total_sessions: records.length,

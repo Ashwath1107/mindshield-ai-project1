@@ -35,12 +35,12 @@ export function Dashboard() {
   }
 
   // Prep data for charts
-  const timelineData = data.records.map(r => ({
+  const timelineData = (data.records || []).map((r: any) => ({
     time: format(new Date(r.timestamp), 'MMM dd HH:mm'),
     score: r.stability_score || 0
   })).reverse(); // Oldest first for timeline
 
-  const emotionData = Object.entries(data.emotion_counts).map(([name, count]) => ({
+  const emotionData = Object.entries(data.emotion_counts || {}).map(([name, count]) => ({
     name, count
   }));
 
@@ -172,7 +172,7 @@ export function Dashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {data.records.slice(0, 10).map((record) => (
+                {(data.records || []).slice(0, 10).map((record: any) => (
                   <tr key={record.id} className="hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-muted-foreground">
                       {format(new Date(record.timestamp), 'MMM dd, HH:mm')}

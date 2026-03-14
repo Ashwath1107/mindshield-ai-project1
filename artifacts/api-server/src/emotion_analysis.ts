@@ -27,34 +27,34 @@ type EmotionEntry = { phrases: string[]; weight: number };
 
 const EMOTION_PATTERNS: Record<Emotion, EmotionEntry[]> = {
   joy: [
-    { phrases: ["absolutely love", "so happy", "over the moon", "on top of the world", "best day", "great day", "feeling amazing", "feeling great", "feeling wonderful", "feeling fantastic", "feeling good", "feel good"], weight: 3 },
-    { phrases: ["happy", "joyful", "elated", "thrilled", "ecstatic", "delighted", "cheerful", "blissful", "content", "pleased", "excited", "wonderful", "fantastic", "awesome", "amazing", "brilliant", "excellent", "terrific", "superb", "perfect", "glad", "grateful", "thankful", "blessed", "lucky", "hopeful", "optimistic", "proud", "celebrated"], weight: 1 },
+    { phrases: ["absolutely love", "so happy", "over the moon", "on top of the world", "best day", "great day", "feeling amazing", "feeling great", "feeling wonderful", "feeling fantastic", "feeling good", "feel good", "super happy", "really joyful"], weight: 3 },
+    { phrases: ["happy", "joyful", "elated", "thrilled", "ecstatic", "delighted", "cheerful", "blissful", "content", "pleased", "excited", "wonderful", "fantastic", "awesome", "amazing", "brilliant", "excellent", "terrific", "superb", "perfect", "glad", "grateful", "thankful", "blessed", "lucky", "hopeful", "optimistic", "proud", "celebrated", "smiling", "laughing", "having fun"], weight: 1 },
   ],
   sadness: [
-    { phrases: ["can't stop crying", "completely broken", "feel empty", "feeling empty", "feel hollow", "no reason to", "don't want to be here", "want to disappear", "wish i wasn't", "feeling lost", "nothing matters", "no point", "what's the point"], weight: 4 },
-    { phrases: ["very sad", "deeply sad", "incredibly sad", "so depressed", "feel depressed", "really down", "feeling down", "pretty down", "so low", "feeling low", "completely down", "really sad", "heartbroken", "devastated", "inconsolable", "wrecked", "destroyed"], weight: 3 },
-    { phrases: ["sad", "unhappy", "down", "depressed", "miserable", "gloomy", "sorrowful", "melancholy", "blue", "dreary", "dismal", "dejected", "despondent", "dispirited", "downhearted", "crestfallen", "disheartened", "grief", "mourning", "crying", "tears", "weeping", "sobbing", "hopeless", "helpless", "worthless", "useless", "pathetic", "failure", "loser", "broken", "shattered", "defeated", "exhausted", "drained", "burned out", "burnt out", "can't cope", "struggling", "suffering"], weight: 1 },
+    { phrases: ["can't stop crying", "completely broken", "feel empty", "feeling empty", "feel hollow", "no reason to", "don't want to be here", "want to disappear", "wish i wasn't", "feeling lost", "nothing matters", "no point", "what's the point", "so dead inside", "feel crushed"], weight: 4 },
+    { phrases: ["very sad", "deeply sad", "incredibly sad", "so depressed", "feel depressed", "really down", "feeling down", "pretty down", "so low", "feeling low", "completely down", "really sad", "heartbroken", "devastated", "inconsolable", "wrecked", "destroyed", "in pain"], weight: 3 },
+    { phrases: ["sad", "unhappy", "down", "depressed", "miserable", "gloomy", "sorrowful", "melancholy", "blue", "dreary", "dismal", "dejected", "despondent", "dispirited", "downhearted", "crestfallen", "disheartened", "grief", "mourning", "crying", "tears", "weeping", "sobbing", "hopeless", "helpless", "worthless", "useless", "pathetic", "failure", "loser", "broken", "shattered", "defeated", "exhausted", "drained", "burned out", "burnt out", "can't cope", "struggling", "suffering", "alone", "lonely", "isolated"], weight: 1 },
   ],
   anger: [
-    { phrases: ["absolutely furious", "so angry", "extremely angry", "really angry", "deeply frustrated", "beyond frustrated", "can't stand", "sick and tired", "fed up with", "pissed off", "really mad", "so mad", "totally mad", "utterly frustrated"], weight: 4 },
-    { phrases: ["angry", "furious", "enraged", "outraged", "infuriated", "livid", "seething", "irate", "incensed", "raging", "hostile", "mad", "irritated", "annoyed", "frustrated", "aggravated", "agitated", "bitter", "resentful", "hate", "despise", "loathe", "disgusted", "fed up", "had enough", "can't take it", "lost it", "explode", "snap", "blowing up", "boiling"], weight: 1 },
+    { phrases: ["absolutely furious", "so angry", "extremely angry", "really angry", "deeply frustrated", "beyond frustrated", "can't stand", "sick and tired", "fed up with", "pissed off", "really mad", "so mad", "totally mad", "utterly frustrated", "boiling with rage"], weight: 4 },
+    { phrases: ["angry", "furious", "enraged", "outraged", "infuriated", "livid", "seething", "irate", "incensed", "raging", "hostile", "mad", "irritated", "annoyed", "frustrated", "aggravated", "agitated", "bitter", "resentful", "hate", "despise", "loathe", "disgusted", "fed up", "had enough", "can't take it", "lost it", "explode", "snap", "blowing up", "boiling", "pissed", "fuming"], weight: 1 },
   ],
   fear: [
-    { phrases: ["completely terrified", "absolutely scared", "so scared", "really scared", "deeply anxious", "severe anxiety", "having a panic attack", "can't breathe", "heart is racing", "can't calm down", "spiraling", "out of control", "losing control", "falling apart"], weight: 4 },
-    { phrases: ["very anxious", "very worried", "so worried", "deeply worried", "so stressed", "extremely stressed", "completely stressed", "really stressed", "very stressed", "stressed out", "burned out"], weight: 3 },
-    { phrases: ["scared", "afraid", "terrified", "frightened", "fearful", "anxious", "worried", "nervous", "panicking", "panic", "paranoid", "phobia", "dread", "dreading", "apprehensive", "uneasy", "jittery", "tense", "on edge", "wound up", "overwhelmed", "stressed", "pressure", "burden", "heavy", "weighed down", "can't focus", "distracted", "can't sleep", "insomnia", "restless", "spinning"], weight: 1 },
+    { phrases: ["completely terrified", "absolutely scared", "so scared", "really scared", "deeply anxious", "severe anxiety", "having a panic attack", "can't breathe", "heart is racing", "can't calm down", "spiraling", "out of control", "losing control", "falling apart", "petrified"], weight: 4 },
+    { phrases: ["very anxious", "very worried", "so worried", "deeply worried", "so stressed", "extremely stressed", "completely stressed", "really stressed", "very stressed", "stressed out", "burned out", "freaking out", "panicking so much"], weight: 3 },
+    { phrases: ["scared", "afraid", "terrified", "frightened", "fearful", "anxious", "worried", "nervous", "panicking", "panic", "paranoid", "phobia", "dread", "dreading", "apprehensive", "uneasy", "jittery", "tense", "on edge", "wound up", "overwhelmed", "stressed", "pressure", "burden", "heavy", "weighed down", "can't focus", "distracted", "can't sleep", "insomnia", "restless", "spinning", "unsure", "unsafe"], weight: 1 },
   ],
   love: [
-    { phrases: ["deeply in love", "head over heels", "madly in love", "unconditionally love", "truly care", "care so much", "means the world", "everything to me", "so grateful for", "so thankful for", "deeply thankful"], weight: 3 },
-    { phrases: ["love", "adore", "cherish", "devoted", "affectionate", "tender", "warm", "caring", "compassionate", "empathetic", "loving", "romantic", "appreciate", "grateful", "admire", "respect", "support", "nurture", "connected", "belong", "together", "family", "friend", "companion"], weight: 1 },
+    { phrases: ["deeply in love", "head over heels", "madly in love", "unconditionally love", "truly care", "care so much", "means the world", "everything to me", "so grateful for", "so thankful for", "deeply thankful", "love so much"], weight: 3 },
+    { phrases: ["love", "adore", "cherish", "devoted", "affectionate", "tender", "warm", "caring", "compassionate", "empathetic", "loving", "romantic", "appreciate", "grateful", "admire", "respect", "support", "nurture", "connected", "belong", "together", "family", "friend", "companion", "soulmate"], weight: 1 },
   ],
   surprise: [
-    { phrases: ["can't believe it", "never expected", "totally unexpected", "completely shocked", "blew my mind", "couldn't have imagined", "out of nowhere", "caught off guard", "didn't see that coming"], weight: 3 },
-    { phrases: ["surprised", "shocked", "astonished", "amazed", "astounded", "stunned", "speechless", "wow", "unbelievable", "incredible", "extraordinary", "unexpected", "sudden", "sudden change", "new development", "plot twist", "revelation"], weight: 1 },
+    { phrases: ["can't believe it", "never expected", "totally unexpected", "completely shocked", "blew my mind", "couldn't have imagined", "out of nowhere", "caught off guard", "didn't see that coming", "i am shocked"], weight: 3 },
+    { phrases: ["surprised", "shocked", "astonished", "amazed", "astounded", "stunned", "speechless", "wow", "unbelievable", "incredible", "extraordinary", "unexpected", "sudden", "sudden change", "new development", "plot twist", "revelation", "startled"], weight: 1 },
   ],
   neutral: [
-    { phrases: ["just okay", "feeling okay", "doing okay", "getting by", "hanging in there", "same as usual", "nothing special", "nothing new"], weight: 2 },
-    { phrases: ["okay", "fine", "alright", "normal", "usual", "average", "so-so", "meh", "neutral", "decent", "moderate", "standard", "ordinary", "routine", "typical"], weight: 1 },
+    { phrases: ["just okay", "feeling okay", "doing okay", "getting by", "hanging in there", "same as usual", "nothing special", "nothing new", "it is what it is", "whatever", "don't mind", "don't care"], weight: 2 },
+    { phrases: ["okay", "fine", "alright", "normal", "usual", "average", "so-so", "meh", "neutral", "decent", "moderate", "standard", "ordinary", "routine", "typical", "boring"], weight: 1 },
   ],
 };
 

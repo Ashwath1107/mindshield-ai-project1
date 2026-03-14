@@ -100,10 +100,10 @@ export function Voice() {
         const duration = (Date.now() - startTimeRef.current) / 1000;
         setIsAnalyzing(true);
 
-        try {
-          const reader = new FileReader();
-          reader.readAsDataURL(audioBlob);
-          reader.onloadend = async () => {
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = async () => {
+          try {
             const base64 = (reader.result as string).split(',')[1];
 
             const res = await fetch('/api/voice-analysis', {
@@ -115,13 +115,16 @@ export function Voice() {
             if (!res.ok) throw new Error(`Server error: ${res.status}`);
             const data = await res.json();
             setResult(data);
-          };
-          reader.onerror = () => { throw new Error("Failed to read audio file"); };
-        } catch (err) {
-          setError("Analysis failed. Please try recording again.");
-        } finally {
+          } catch (err) {
+            setError("Analysis failed. Please try recording again.");
+          } finally {
+            setIsAnalyzing(false);
+          }
+        };
+        reader.onerror = () => { 
+          setError("Failed to read audio file");
           setIsAnalyzing(false);
-        }
+        };
       };
 
       recorder.onerror = () => {

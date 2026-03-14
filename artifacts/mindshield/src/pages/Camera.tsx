@@ -78,7 +78,10 @@ export function Camera() {
       
       analyzeMutation.mutate(
         { data: { image_data: rawBase64 } },
-        { onSuccess: (res) => setLatestResult(res) }
+        { 
+          onSuccess: (res) => setLatestResult(res),
+          onError: (err) => console.error("Face scan failed", err)
+        }
       );
     }
   };
