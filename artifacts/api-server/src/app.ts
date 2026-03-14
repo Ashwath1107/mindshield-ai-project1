@@ -19,7 +19,7 @@ const staticPath = path.resolve(__dirname, "../../mindshield/dist/public");
 app.use(express.static(staticPath));
 
 // Fallback to index.html for SPA routing
-app.get("*", (req, res) => {
+app.get("*path", (req, res) => {
   if (req.path.startsWith("/api")) return; // Don't catch API calls
   res.sendFile(path.join(staticPath, "index.html"));
 });
