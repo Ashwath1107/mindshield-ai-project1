@@ -1,0 +1,10 @@
+artifacts/api-server/src
+artifacts/api-server/tsconfig.json
+lib/db/src
+lib/api-zod/src
+node_modules
+.git
+.replit
+mockup-sandbox
+scripts
+attached_assets
